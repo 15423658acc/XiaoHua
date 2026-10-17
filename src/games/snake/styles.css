@@ -1,0 +1,59 @@
+/* 贪吃蛇游戏样式 */
+.snake-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.snake-instructions {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.snake-board {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
+  background: #0f1a2e;
+  border-radius: 12px;
+  padding: 6px;
+  touch-action: none; /* 阻止页面滚动 */
+}
+
+.snake-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+.snake-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+}
+.snake-overlay h3 {
+  font-size: 28px;
+  color: var(--warning);
+}
+.snake-overlay p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.snake-overlay-actions {
+  display: flex;
+  gap: 8px;
+}

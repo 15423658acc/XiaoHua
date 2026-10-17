@@ -1,0 +1,165 @@
+/* 推箱子游戏样式 */
+.sokoban-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.sokoban-instructions {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.sokoban-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.sokoban-level-info {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sokoban-reset-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background 0.2s, transform 0.1s;
+}
+.sokoban-reset-btn:active { transform: scale(0.96); }
+.sokoban-reset-btn:hover { background: var(--bg-card-hover); }
+
+.sokoban-board-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.sokoban-board {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  background: #0f1a2e;
+  border-radius: 12px;
+  padding: 8px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  touch-action: none;
+}
+
+.sokoban-cell {
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(14px, 4vw, 22px);
+  user-select: none;
+}
+
+.sokoban-cell.wall {
+  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+}
+
+.sokoban-cell.floor {
+  background: #1a2a3e;
+}
+
+.sokoban-cell.target {
+  background: #1a2a3e;
+  position: relative;
+}
+.sokoban-cell.target::after {
+  content: '';
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: rgba(255, 211, 105, 0.4);
+  box-shadow: 0 0 8px rgba(255, 211, 105, 0.3);
+}
+
+.sokoban-cell.box {
+  background: linear-gradient(135deg, #a07c4a 0%, #6e5530 100%);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.sokoban-cell.box-on-target {
+  background: linear-gradient(135deg, #4ecca3 0%, #2d8b6e 100%);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(78, 204, 163, 0.5);
+}
+
+.sokoban-cell.player {
+  background: radial-gradient(circle, #ff6b85 0%, #e94560 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.6);
+  z-index: 2;
+}
+
+.sokoban-cell.player-on-target {
+  background: radial-gradient(circle, #ff6b85 0%, #e94560 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.6);
+  z-index: 2;
+}
+
+.sokoban-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+}
+.sokoban-overlay h3 {
+  font-size: 28px;
+  color: var(--warning);
+}
+.sokoban-overlay p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.sokoban-overlay-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sokoban-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--warning);
+  font-size: clamp(20px, 6vw, 32px);
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 6;
+  animation: sokoban-banner-fade 1.5s ease forwards;
+}
+@keyframes sokoban-banner-fade {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}

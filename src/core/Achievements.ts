@@ -82,6 +82,177 @@ export const ACHIEVEMENTS: Achievement[] = [
     game: '2048',
     icon: '🌟',
   },
+
+  // 贪吃蛇成就
+  {
+    id: 'snake_len_10',
+    name: '小蛇初长',
+    description: '在贪吃蛇中长度达到 10',
+    game: 'snake',
+    icon: '🐛',
+  },
+  {
+    id: 'snake_len_20',
+    name: '长蛇出洞',
+    description: '在贪吃蛇中长度达到 20',
+    game: 'snake',
+    icon: '🐍',
+  },
+  {
+    id: 'snake_len_30',
+    name: '巨蟒之王',
+    description: '在贪吃蛇中长度达到 30',
+    game: 'snake',
+    icon: '🐉',
+  },
+  {
+    id: 'snake_score_100',
+    name: '蛇王百点',
+    description: '在贪吃蛇单局得分突破 100',
+    game: 'snake',
+    icon: '💯',
+  },
+  {
+    id: 'snake_score_500',
+    name: '蛇皇五百',
+    description: '在贪吃蛇单局得分突破 500',
+    game: 'snake',
+    icon: '👑',
+  },
+
+  // 推箱子成就
+  {
+    id: 'sokoban_clear_1',
+    name: '推门见山',
+    description: '通关推箱子第 1 关',
+    game: 'sokoban',
+    icon: '🚪',
+  },
+  {
+    id: 'sokoban_clear_3',
+    name: '推动渐入',
+    description: '通关推箱子第 3 关',
+    game: 'sokoban',
+    icon: '📦',
+  },
+  {
+    id: 'sokoban_clear_all',
+    name: '推箱大师',
+    description: '通关推箱子全部 6 关',
+    game: 'sokoban',
+    icon: '🏆',
+  },
+
+  // 俄罗斯方块成就
+  {
+    id: 'tetris_lines_10',
+    name: '消行入门',
+    description: '在俄罗斯方块中累计消 10 行',
+    game: 'tetris',
+    icon: '📊',
+  },
+  {
+    id: 'tetris_lines_50',
+    name: '消行熟手',
+    description: '在俄罗斯方块中累计消 50 行',
+    game: 'tetris',
+    icon: '📈',
+  },
+  {
+    id: 'tetris_lines_100',
+    name: '消行大师',
+    description: '在俄罗斯方块中累计消 100 行',
+    game: 'tetris',
+    icon: '🎯',
+  },
+  {
+    id: 'tetris_score_1000',
+    name: '千分小成',
+    description: '在俄罗斯方块单局得分突破 1000',
+    game: 'tetris',
+    icon: '⭐',
+  },
+  {
+    id: 'tetris_score_5000',
+    name: '五千分高手',
+    description: '在俄罗斯方块单局得分突破 5000',
+    game: 'tetris',
+    icon: '🌟',
+  },
+  {
+    id: 'tetris_clear_4',
+    name: '一次四消',
+    description: '在俄罗斯方块中一次消 4 行',
+    game: 'tetris',
+    icon: '⚡',
+  },
+
+  // 打砖块成就
+  {
+    id: 'breakout_clear_50',
+    name: '砖墙初破',
+    description: '在打砖块单局消 50 块砖',
+    game: 'breakout',
+    icon: '🧱',
+  },
+  {
+    id: 'breakout_clear_200',
+    name: '砖墙粉碎',
+    description: '在打砖块单局消 200 块砖',
+    game: 'breakout',
+    icon: '💥',
+  },
+  {
+    id: 'breakout_score_500',
+    name: '砖块五百',
+    description: '在打砖块单局得分突破 500',
+    game: 'breakout',
+    icon: '🎯',
+  },
+  {
+    id: 'breakout_score_2000',
+    name: '砖块两千',
+    description: '在打砖块单局得分突破 2000',
+    game: 'breakout',
+    icon: '🏆',
+  },
+  {
+    id: 'breakout_clear_all',
+    name: '全砖清场',
+    description: '在打砖块中一局清光所有砖块',
+    game: 'breakout',
+    icon: '🎆',
+  },
+
+  // 记忆翻牌成就
+  {
+    id: 'memory_clear',
+    name: '记忆通关',
+    description: '完成一局记忆翻牌',
+    game: 'memory',
+    icon: '🧠',
+  },
+  {
+    id: 'memory_steps_20',
+    name: '神速记忆',
+    description: '在 20 步内通关记忆翻牌',
+    game: 'memory',
+    icon: '⚡',
+  },
+  {
+    id: 'memory_time_30s',
+    name: '极速翻牌',
+    description: '在 30 秒内通关记忆翻牌',
+    game: 'memory',
+    icon: '⏱️',
+  },
+  {
+    id: 'memory_perfect',
+    name: '过目不忘',
+    description: '在记忆翻牌中零错误通关',
+    game: 'memory',
+    icon: '💎',
+  },
 ];
 
 /** 里程碑：基于 SaveData 计算的全局累积型目标 */
