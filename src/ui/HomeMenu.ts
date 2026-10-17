@@ -33,7 +33,7 @@ export class HomeMenu {
   render(): void {
     this.container.innerHTML = `
       <header class="app-header">
-        <div class="app-title">🌸 小花游戏</div>
+        <div class="app-title">XiaoHua</div>
         <div class="app-header-actions">
           <button class="icon-btn" data-action="achievements" aria-label="成就">🏆</button>
           <button class="icon-btn" data-action="migration" aria-label="迁移存档">☁️</button>
