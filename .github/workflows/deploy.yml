@@ -38,8 +38,13 @@ jobs:
           GITHUB_ACTIONS: true
         run: npm run build
 
+      # enablement: true —— 若仓库尚未启用 Pages，自动启用
+      # 注意：若已启用但 Source 是 "Deploy from a branch"，本参数不会改写已有配置，
+      # 需要手动到 Settings → Pages → Source 改为 "GitHub Actions"
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
