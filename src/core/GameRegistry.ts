@@ -13,6 +13,11 @@ import { SokobanFactory } from '../games/sokoban';
 import { TetrisFactory } from '../games/tetris';
 import { BreakoutFactory } from '../games/breakout';
 import { MemoryFactory } from '../games/memory';
+import { MinesweeperFactory } from '../games/minesweeper';
+import { HexmatchFactory } from '../games/hexmatch';
+import { SudokuFactory } from '../games/sudoku';
+import { LiankanFactory } from '../games/liankan';
+import { ZumaFactory } from '../games/zuma';
 
 export const GAMES: GameRegistration[] = [
   {
@@ -62,6 +67,46 @@ export const GAMES: GameRegistration[] = [
     category: 'puzzle',
     description: '翻开相同图案配对，挑战最少步数',
     factory: MemoryFactory,
+  },
+  {
+    id: 'minesweeper',
+    name: '扫雷',
+    icon: '💣',
+    category: 'puzzle',
+    description: '标记地雷，翻开所有安全格',
+    factory: MinesweeperFactory,
+  },
+  {
+    id: 'hexmatch',
+    name: '六边形消除',
+    icon: '🔷',
+    category: 'casual',
+    description: '交换相邻六边形，消除同色连线',
+    factory: HexmatchFactory,
+  },
+  {
+    id: 'sudoku',
+    name: '数独',
+    icon: '🧩',
+    category: 'logic',
+    description: '填入 1-9 数字，挑战数独逻辑',
+    factory: SudokuFactory,
+  },
+  {
+    id: 'liankan',
+    name: '连连看',
+    icon: '🀄',
+    category: 'puzzle',
+    description: '消除相同图案，路径最多两次转折',
+    factory: LiankanFactory,
+  },
+  {
+    id: 'zuma',
+    name: '祖玛',
+    icon: '🎱',
+    category: 'action',
+    description: '发射彩球消除同色链，阻止球链进洞',
+    factory: ZumaFactory,
   },
 ];
 

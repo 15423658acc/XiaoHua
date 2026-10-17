@@ -1,0 +1,151 @@
+/* 扫雷样式 */
+.mine-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.mine-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--warning);
+}
+
+.mine-count,
+.mine-timer {
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+  text-align: center;
+}
+
+.mine-restart {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--accent);
+  color: #fff;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.mine-restart:active {
+  transform: scale(0.96);
+}
+
+.mine-board {
+  position: relative;
+  background: #2a2a40;
+  border-radius: 12px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 3px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  touch-action: none;
+  user-select: none;
+}
+
+.mine-cell {
+  background: var(--bg-card-hover);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(14px, 4vw, 22px);
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+  line-height: 1;
+}
+
+.mine-cell:hover {
+  background: #2a6d9c;
+}
+
+.mine-cell.revealed {
+  background: var(--bg-secondary);
+  cursor: default;
+}
+
+.mine-cell.revealed.mine {
+  background: #4a1f2a;
+}
+
+.mine-cell.exploded {
+  background: var(--accent);
+  animation: mine-explode 0.4s ease;
+}
+
+@keyframes mine-explode {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.mine-cell.wrong-flag {
+  background: #5a2a2a;
+}
+
+.mine-cell.flagged {
+  /* 由 JS 设置文本 🚩 */
+}
+
+/* 通关 / 失败覆盖层 */
+.mine-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 5;
+}
+.mine-overlay h3 {
+  font-size: clamp(22px, 6vw, 30px);
+  color: var(--warning);
+}
+.mine-overlay p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.mine-overlay-stats {
+  font-size: 12px;
+}
+.mine-overlay-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 380px) {
+  .mine-header {
+    font-size: 13px;
+    padding: 10px;
+    gap: 6px;
+  }
+  .mine-restart {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .mine-count,
+  .mine-timer {
+    min-width: 48px;
+    font-size: 13px;
+  }
+}

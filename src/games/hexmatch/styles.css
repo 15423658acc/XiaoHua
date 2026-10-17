@@ -1,0 +1,142 @@
+/* 六边形消除样式 */
+.hex-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.hex-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--warning);
+  font-variant-numeric: tabular-nums;
+}
+
+.hex-board {
+  --hex-size: clamp(34px, 11vw, 50px);
+  --gap: 4px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  align-items: flex-start;
+  /* 宽度自适应内容（含奇数行偏移半格） */
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px;
+  background: #2a2a40;
+  border-radius: 12px;
+  touch-action: none;
+  user-select: none;
+}
+
+.hex-row {
+  display: flex;
+  gap: var(--gap);
+  width: calc(7 * var(--hex-size) + 6 * var(--gap));
+  flex-shrink: 0;
+}
+
+.hex-row.odd {
+  margin-left: calc((var(--hex-size) + var(--gap)) / 2);
+}
+
+.hex-tile {
+  width: var(--hex-size);
+  height: var(--hex-size);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  position: relative;
+}
+
+/* 内层高光，让六边形更立体 */
+.hex-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
+  pointer-events: none;
+}
+
+.hex-tile:hover {
+  filter: brightness(1.15);
+}
+
+.hex-tile.selected {
+  transform: scale(1.12);
+  filter: brightness(1.35) drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+  z-index: 2;
+}
+
+.hex-tile.removing {
+  animation: hex-remove 0.25s ease forwards;
+  z-index: 3;
+}
+
+@keyframes hex-remove {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* 覆盖层 */
+.hex-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+}
+.hex-overlay h3 {
+  font-size: clamp(22px, 6vw, 30px);
+  color: var(--warning);
+}
+.hex-overlay p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.hex-overlay-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 380px) {
+  .hex-header {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  .hex-board {
+    --hex-size: clamp(28px, 9vw, 40px);
+    --gap: 3px;
+  }
+}

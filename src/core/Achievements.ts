@@ -253,6 +253,121 @@ export const ACHIEVEMENTS: Achievement[] = [
     game: 'memory',
     icon: '💎',
   },
+
+  // 扫雷成就
+  {
+    id: 'minesweeper_clear',
+    name: '排雷成功',
+    description: '通关扫雷',
+    game: 'minesweeper',
+    icon: '🚩',
+  },
+  {
+    id: 'minesweeper_time_60s',
+    name: '神速排雷',
+    description: '在扫雷中 60 秒内通关',
+    game: 'minesweeper',
+    icon: '⚡',
+  },
+  {
+    id: 'minesweeper_no_flag',
+    name: '无旗通关',
+    description: '在扫雷中不使用标记通关',
+    game: 'minesweeper',
+    icon: '🧠',
+  },
+
+  // 六边形消除成就
+  {
+    id: 'hexmatch_score_100',
+    name: '六边初成',
+    description: '在六边形消除单局得分突破 100',
+    game: 'hexmatch',
+    icon: '⬡',
+  },
+  {
+    id: 'hexmatch_score_500',
+    name: '六边大师',
+    description: '在六边形消除单局得分突破 500',
+    game: 'hexmatch',
+    icon: '🔷',
+  },
+  {
+    id: 'hexmatch_clear_4',
+    name: '四连消除',
+    description: '在六边形消除中一次消除 4 连',
+    game: 'hexmatch',
+    icon: '💥',
+  },
+
+  // 数独成就
+  {
+    id: 'sudoku_clear',
+    name: '数独通关',
+    description: '完成一局数独',
+    game: 'sudoku',
+    icon: '✏️',
+  },
+  {
+    id: 'sudoku_hard',
+    name: '困难大师',
+    description: '在困难难度下通关数独',
+    game: 'sudoku',
+    icon: '🏆',
+  },
+  {
+    id: 'sudoku_no_error',
+    name: '无错通关',
+    description: '在数独中无任何错误通关',
+    game: 'sudoku',
+    icon: '💎',
+  },
+
+  // 连连看成就
+  {
+    id: 'liankan_clear',
+    name: '连连通关',
+    description: '完成一局连连看',
+    game: 'liankan',
+    icon: '🀄',
+  },
+  {
+    id: 'liankan_no_hint',
+    name: '无提示通关',
+    description: '在连连看中不使用提示通关',
+    game: 'liankan',
+    icon: '🎯',
+  },
+  {
+    id: 'liankan_time_180s',
+    name: '极速连连',
+    description: '在 180 秒内通关连连看',
+    game: 'liankan',
+    icon: '⚡',
+  },
+
+  // 祖玛成就
+  {
+    id: 'zuma_clear_1',
+    name: '祖玛初胜',
+    description: '通关祖玛第 1 关',
+    game: 'zuma',
+    icon: '🎱',
+  },
+  {
+    id: 'zuma_clear_all',
+    name: '祖玛大师',
+    description: '通关祖玛全部 3 关',
+    game: 'zuma',
+    icon: '👑',
+  },
+  {
+    id: 'zuma_combo_3',
+    name: '三连消球',
+    description: '在祖玛中单次发射产生 3 次连锁',
+    game: 'zuma',
+    icon: '🔥',
+  },
 ];
 
 /** 里程碑：基于 SaveData 计算的全局累积型目标 */
