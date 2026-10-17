@@ -3,9 +3,9 @@
  *
  * 渲染：Canvas
  * 输入：鼠标 mousemove / 触屏 touchmove 控制挡板 x，空格开始/暂停
- * 球速：固定 5px/帧，初始向下 45°
+ * 球速：每关递增，初始向下 45°
  * 反弹：挡板中心垂直反弹，两端 ±60° 偏角
- * 通关：所有砖块消除后重新生成，球速 +0.5
+ * 通关：通过 5 个关卡后全部通关
  * 失败：球碰底
  * 成就：单局消砖 50/200、单局分数 500/2000、单局全消
  */
@@ -30,6 +30,76 @@ interface Brick {
 
 type GameState = 'idle' | 'running' | 'paused' | 'over';
 
+interface LevelLayout {
+  rows: string[]; // 砖块布局
+  speed: number; // 该关球速
+}
+
+// 关卡布局定义：每关是一个字符串数组，每个字符代表一种砖块
+// 'R'=红(6分) 'P'=紫(5分) 'G'=绿(4分) 'Y'=黄(3分) 'B'=蓝(2分) 'S'=灰(1分) ' '=无
+const LEVELS: LevelLayout[] = [
+  // 第1关：基础满铺 6行8列
+  {
+    rows: [
+      'RRRRRRRR',
+      'PPPPPPPP',
+      'GGGGGGGG',
+      'YYYYYYYY',
+      'BBBBBBBB',
+      'SSSSSSSS',
+    ],
+    speed: 5,
+  },
+  // 第2关：中间空出（菱形）
+  {
+    rows: [
+      '        ',
+      ' RR  RR ',
+      ' PPPPPP ',
+      'GGGGGGGG',
+      ' YYYYYY ',
+      '  BBBB  ',
+    ],
+    speed: 5.5,
+  },
+  // 第3关：左右分开
+  {
+    rows: [
+      'RRR  RRR',
+      'PPP  PPP',
+      'GGG  GGG',
+      'YYY  YYY',
+      'BBB  BBB',
+      '        ',
+    ],
+    speed: 6,
+  },
+  // 第4关：交错排列
+  {
+    rows: [
+      'R R R R ',
+      ' P P P P',
+      'R R R R ',
+      ' P P P P',
+      'GGGGGGGG',
+      'YYYYYYYY',
+    ],
+    speed: 6.5,
+  },
+  // 第5关：金字塔
+  {
+    rows: [
+      '        ',
+      '   RR   ',
+      '  PPPP  ',
+      ' GGGGGG ',
+      'YYYYYYYY',
+      'BBBBBBBB',
+    ],
+    speed: 7,
+  },
+];
+
 class Breakout implements GameInstance {
   private root!: HTMLElement;
   private canvas!: HTMLCanvasElement;
@@ -42,17 +112,16 @@ class Breakout implements GameInstance {
   private readonly PADDLE_W = 80;
   private readonly PADDLE_H = 10;
   private readonly PADDLE_Y = 470;
-  private readonly BRICK_ROWS = 6;
-  private readonly BRICK_COLS = 8;
-  // 砖块布局：实际宽度 = 8*46 + 7*4 = 396，居中放置（留 2px 边距）
-  private readonly BRICK_W = 46;
-  private readonly BRICK_H = 20;
   private readonly BRICK_GAP = 4;
-  private readonly BRICK_START_X = 2;
-  private readonly BRICK_START_Y = 40;
 
-  private readonly ROW_COLORS = ['#e94560', '#533483', '#4ecca3', '#ffd369', '#5e72e4', '#a0a0b8'];
-  private readonly ROW_POINTS = [6, 5, 4, 3, 2, 1];
+  private readonly BRICK_COLORS: Record<string, { color: string; points: number }> = {
+    'R': { color: '#e94560', points: 6 },
+    'P': { color: '#533483', points: 5 },
+    'G': { color: '#4ecca3', points: 4 },
+    'Y': { color: '#ffd369', points: 3 },
+    'B': { color: '#5e72e4', points: 2 },
+    'S': { color: '#a0a0b8', points: 1 },
+  };
 
   private ball = { x: 200, y: 250, dx: 0, dy: 0 };
   private paddle = { x: 160 };
@@ -61,9 +130,11 @@ class Breakout implements GameInstance {
   private score = 0;
   private best = 0;
   private bricksCleared = 0;
+  private level = 1;
   private ballSpeed = 5;
   private state: GameState = 'idle';
   private isOver = false;
+  private levelBannerUntil = 0;
 
   private rafId: number | null = null;
 
@@ -78,11 +149,20 @@ class Breakout implements GameInstance {
     const save = storage.load();
     this.best = save.scores['breakout'] ?? 0;
 
+    // 每次进入游戏都从第 1 关开始
+    this.level = 1;
+    this.score = 0;
+    this.bricksCleared = 0;
+    this.ballSpeed = LEVELS[0].speed;
+    this.isOver = false;
+    this.state = 'idle';
+    this.levelBannerUntil = 0;
+
     this.root = container;
     this.root.innerHTML = `
       <div class="breakout-wrap">
         <div class="breakout-instructions">
-          移动鼠标/手指控制挡板 · 空格开始/暂停 · 击碎所有砖块通关
+          移动鼠标/手指控制挡板 · 空格暂停 · 击碎所有砖块通关
         </div>
         <div class="breakout-board-wrap">
           <canvas id="breakout-canvas" width="${this.W}" height="${this.H}"></canvas>
@@ -111,15 +191,28 @@ class Breakout implements GameInstance {
 
   private buildBricks() {
     this.bricks = [];
-    for (let r = 0; r < this.BRICK_ROWS; r++) {
-      for (let c = 0; c < this.BRICK_COLS; c++) {
+    const layout = LEVELS[Math.min(this.level - 1, LEVELS.length - 1)];
+    const rows = layout.rows;
+    const cols = rows[0].length;
+    // 动态计算砖块尺寸以适配 canvas 宽度
+    const totalGap = (cols - 1) * this.BRICK_GAP;
+    const brickW = (this.W - 4 - totalGap) / cols; // 留 2px 边距
+    const brickH = 20;
+    const startX = 2;
+    const startY = 40;
+    for (let r = 0; r < rows.length; r++) {
+      for (let c = 0; c < cols; c++) {
+        const ch = rows[r][c];
+        if (ch === ' ') continue;
+        const info = this.BRICK_COLORS[ch];
+        if (!info) continue;
         this.bricks.push({
-          x: this.BRICK_START_X + c * (this.BRICK_W + this.BRICK_GAP),
-          y: this.BRICK_START_Y + r * (this.BRICK_H + this.BRICK_GAP),
-          w: this.BRICK_W,
-          h: this.BRICK_H,
-          color: this.ROW_COLORS[r],
-          points: this.ROW_POINTS[r],
+          x: startX + c * (brickW + this.BRICK_GAP),
+          y: startY + r * (brickH + this.BRICK_GAP),
+          w: brickW,
+          h: brickH,
+          color: info.color,
+          points: info.points,
           alive: true,
         });
       }
@@ -169,7 +262,12 @@ class Breakout implements GameInstance {
     if (this.isOver) return;
     const x = this.clientXToCanvasX(e.clientX);
     this.setPaddleX(x);
-    if (this.state !== 'running') this.render();
+    if (this.state === 'idle') {
+      this.state = 'running';
+      this.startLoop();
+    } else if (this.state !== 'running') {
+      this.render();
+    }
   }
 
   private handleTouchMove(e: TouchEvent) {
@@ -178,7 +276,12 @@ class Breakout implements GameInstance {
     if (e.touches.length !== 1) return;
     const x = this.clientXToCanvasX(e.touches[0].clientX);
     this.setPaddleX(x);
-    if (this.state !== 'running') this.render();
+    if (this.state === 'idle') {
+      this.state = 'running';
+      this.startLoop();
+    } else if (this.state !== 'running') {
+      this.render();
+    }
   }
 
   private setPaddleX(centerX: number) {
@@ -283,17 +386,29 @@ class Breakout implements GameInstance {
     if (this.bricks.every((b) => !b.alive)) {
       const isNew = storage.unlock('breakout_clear_all');
       if (isNew) this.eventCb?.('achievement-unlocked', 'breakout_clear_all');
-      // 重新生成砖块，球速 +0.5
-      this.ballSpeed += 0.5;
-      this.buildBricks();
-      // 重新缩放当前速度向量到新速度
-      const curSpeed = Math.hypot(this.ball.dx, this.ball.dy);
-      if (curSpeed > 0) {
-        const scale = this.ballSpeed / curSpeed;
-        this.ball.dx *= scale;
-        this.ball.dy *= scale;
+      if (this.level < LEVELS.length) {
+        // 进入下一关
+        this.level += 1;
+        this.ballSpeed = LEVELS[this.level - 1].speed;
+        this.buildBricks();
+        this.resetBall();
+        // 缩放速度
+        const curSpeed = Math.hypot(this.ball.dx, this.ball.dy);
+        if (curSpeed > 0) {
+          const scale = this.ballSpeed / curSpeed;
+          this.ball.dx *= scale;
+          this.ball.dy *= scale;
+        }
+        this.showLevelBanner();
+      } else {
+        // 全部通关
+        this.endGame(true);
       }
     }
+  }
+
+  private showLevelBanner() {
+    this.levelBannerUntil = Date.now() + 1500;
   }
 
   private checkBrickAchievements() {
@@ -323,6 +438,12 @@ class Breakout implements GameInstance {
     // 背景
     ctx.fillStyle = '#0f0f1e';
     ctx.fillRect(0, 0, this.W, this.H);
+    // HUD - 当前关卡
+    ctx.fillStyle = '#e6e6e6';
+    ctx.font = '14px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`第 ${this.level} 关`, 8, 12);
     // 砖块
     for (const b of this.bricks) {
       if (!b.alive) continue;
@@ -346,6 +467,19 @@ class Breakout implements GameInstance {
     ctx.beginPath();
     ctx.arc(this.ball.x, this.ball.y, this.BALL_R, 0, Math.PI * 2);
     ctx.fill();
+    // 关卡切换横幅
+    if (Date.now() < this.levelBannerUntil) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.fillRect(0, 0, this.W, this.H);
+      ctx.fillStyle = '#ffd369';
+      ctx.font = 'bold 36px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`第 ${this.level} 关`, this.W / 2, this.H / 2 - 16);
+      ctx.fillStyle = '#e6e6e6';
+      ctx.font = '16px -apple-system, sans-serif';
+      ctx.fillText('准备出发！', this.W / 2, this.H / 2 + 24);
+    }
     // 提示层
     if (this.state === 'idle' || this.state === 'paused') {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
@@ -354,16 +488,25 @@ class Breakout implements GameInstance {
       ctx.font = '22px -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const msg = this.state === 'idle' ? '按 空格 开始' : '已暂停 · 按 空格 继续';
+      const msg = this.state === 'idle' ? '移动挡板 或 按 空格 开始' : '已暂停 · 按 空格 继续';
       ctx.fillText(msg, this.W / 2, this.H / 2);
     }
   }
 
-  private showOverlay() {
+  private showOverlay(cleared = false) {
     if (this.overlayEl) this.overlayEl.remove();
     const overlay = document.createElement('div');
     overlay.className = 'breakout-overlay';
-    overlay.innerHTML = `
+    overlay.innerHTML = cleared
+      ? `
+      <h3>🎉 全部通关！</h3>
+      <p>得分 ${this.score} · 最高 ${this.best}</p>
+      <p>消除 ${this.bricksCleared} 砖</p>
+      <div class="breakout-overlay-actions">
+        <button class="btn-primary" data-action="restart">再来一局</button>
+      </div>
+    `
+      : `
       <h3>💀 游戏结束</h3>
       <p>得分 ${this.score} · 最高 ${this.best}</p>
       <p>消除 ${this.bricksCleared} 砖</p>
@@ -381,18 +524,20 @@ class Breakout implements GameInstance {
   }
 
   private restart() {
+    this.level = 1;
     this.score = 0;
     this.bricksCleared = 0;
-    this.ballSpeed = 5;
+    this.ballSpeed = LEVELS[0].speed;
     this.isOver = false;
     this.state = 'idle';
+    this.levelBannerUntil = 0;
     this.buildBricks();
     this.resetBall();
     this.scoreCb?.(this.score);
     this.render();
   }
 
-  private endGame() {
+  private endGame(cleared = false) {
     this.isOver = true;
     this.state = 'over';
     this.stopLoop();
@@ -403,7 +548,7 @@ class Breakout implements GameInstance {
       storage.markMilestone(id);
       this.eventCb?.('milestone-reached', id);
     }
-    this.showOverlay();
+    this.showOverlay(cleared);
   }
 
   destroy(): void {

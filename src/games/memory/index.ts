@@ -3,16 +3,34 @@
  *
  * 渲染：DOM + CSS Grid + CSS 3D 翻转
  * 输入：鼠标/触屏点击牌面
- * 计分：基础 1000 - 步数*10 - 时间秒数*5（最低 100）
- * 成就：通关 / ≤20 步通关 / ≤30 秒通关 / 0 错误通关
+ * 关卡：5 关递增（6/8/10/12/15 对），卡牌随关卡缩小
+ * 计分：每关 1000 - 步数*10 - 时间秒数*5（最低 100），总分 = 各关分数之和
+ * 成就：通关 / ≤20 步通关 / ≤30 秒通关 / 0 错误通关（按单关表现判定）
  */
 import type { GameInstance } from '../../types';
 import { storage } from '../../core/Storage';
 import { checkMilestones } from '../../core/Achievements';
 import './styles.css';
 
-const EMOJIS = ['🌟', '🌙', '☀️', '🌈', '🌸', '🍎', '🎸', '🎲'];
+const EMOJIS = [
+  '🌟', '🌙', '☀️', '🌈', '🌸', '🍎', '🎸', '🎲',
+  '🦊', '🐢', '🚀', '🎨', '⚽', '🎵', '💎',
+];
 const GAME_ID = 'memory';
+
+interface LevelConfig {
+  pairs: number;
+  cols: number;
+  rows: number;
+}
+
+const LEVELS: LevelConfig[] = [
+  { pairs: 6, cols: 4, rows: 3 },   // 12 张
+  { pairs: 8, cols: 4, rows: 4 },   // 16 张
+  { pairs: 10, cols: 5, rows: 4 },  // 20 张
+  { pairs: 12, cols: 6, rows: 4 },  // 24 张
+  { pairs: 15, cols: 6, rows: 5 },  // 30 张
+];
 
 export function MemoryFactory(): GameInstance {
   return new Memory();
@@ -33,6 +51,9 @@ class Memory implements GameInstance {
   private secondIdx: number | null = null;
   private locked = false; // 翻回等待期间禁止点击
 
+  private level = 1;
+  private totalScore = 0; // 各关分数之和
+  private currentPairs = 0; // 当前关卡需要的配对数
   private steps = 0;
   private wrongMatches = 0;
   private matchedPairs = 0;
@@ -43,7 +64,9 @@ class Memory implements GameInstance {
 
   private timerInterval: number | null = null;
   private flipBackTimer: number | null = null;
+  private levelTimer: number | null = null;
   private overlayEl: HTMLElement | null = null;
+  private bannerEl: HTMLElement | null = null;
 
   private scoreCb: ((score: number) => void) | null = null;
   private eventCb: ((event: string, payload?: unknown) => void) | null = null;
@@ -56,6 +79,10 @@ class Memory implements GameInstance {
       <div class="mem-wrap">
         <div class="mem-info">
           <div class="mem-stat">
+            <span class="mem-stat-label">关卡</span>
+            <span class="mem-stat-value" id="mem-level">1/${LEVELS.length}</span>
+          </div>
+          <div class="mem-stat">
             <span class="mem-stat-label">步数</span>
             <span class="mem-stat-value" id="mem-steps">0</span>
           </div>
@@ -65,7 +92,11 @@ class Memory implements GameInstance {
           </div>
           <div class="mem-stat">
             <span class="mem-stat-label">配对</span>
-            <span class="mem-stat-value" id="mem-pairs">0/${EMOJIS.length}</span>
+            <span class="mem-stat-value" id="mem-pairs">0/0</span>
+          </div>
+          <div class="mem-stat">
+            <span class="mem-stat-label">总分</span>
+            <span class="mem-stat-value" id="mem-score">0</span>
           </div>
         </div>
         <div class="mem-board" id="mem-board"></div>
@@ -73,17 +104,34 @@ class Memory implements GameInstance {
     `;
     this.boardEl = this.root.querySelector('#mem-board')!;
 
-    this.initCards();
-    this.createBoard();
-    this.boardEl.addEventListener('click', this.clickHandler);
-
+    this.level = 1;
+    this.totalScore = 0;
+    this.isOver = false;
     this.scoreCb?.(0);
+    this.loadLevel(1);
+
+    this.boardEl.addEventListener('click', this.clickHandler);
   }
 
-  private initCards() {
-    const pairs = [...EMOJIS, ...EMOJIS];
+  /** 加载第 lvl 关：选牌、洗牌、重置状态、渲染棋盘 */
+  private loadLevel(lvl: number) {
+    const config = LEVELS[lvl - 1];
+    this.currentPairs = config.pairs;
+
+    // 清理上一关可能残留的定时器与横幅
+    this.clearTimers();
+    if (this.bannerEl) {
+      this.bannerEl.remove();
+      this.bannerEl = null;
+    }
+
+    // 从 EMOJIS 中取前 config.pairs 个并复制成对
+    const chosen = EMOJIS.slice(0, config.pairs);
+    const pairs = [...chosen, ...chosen];
     this.shuffle(pairs);
     this.cards = pairs.map((emoji) => ({ emoji, flipped: false, matched: false }));
+
+    // 重置本关状态
     this.firstIdx = null;
     this.secondIdx = null;
     this.locked = false;
@@ -94,6 +142,9 @@ class Memory implements GameInstance {
     this.elapsedSec = 0;
     this.isOver = false;
     this.hasStarted = false;
+
+    this.createBoard();
+    this.updateInfo();
   }
 
   private shuffle<T>(arr: T[]): void {
@@ -159,8 +210,8 @@ class Memory implements GameInstance {
       this.locked = false;
       this.updateCardState(firstIdx);
       this.updateCardState(secondIdx);
-      if (this.matchedPairs === EMOJIS.length) {
-        this.endGame();
+      if (this.matchedPairs === this.currentPairs) {
+        this.onLevelClear();
       }
     } else {
       // 配对失败：1 秒后翻回
@@ -189,20 +240,39 @@ class Memory implements GameInstance {
   }
 
   private updateLiveScore() {
-    this.scoreCb?.(this.computeScore());
+    // 进行中：累计 + 本关实时估算；关卡间：仅累计
+    if (this.hasStarted) {
+      this.scoreCb?.(this.totalScore + this.computeScore());
+    } else {
+      this.scoreCb?.(this.totalScore);
+    }
   }
 
   private updateInfo() {
+    const levelEl = this.root.querySelector('#mem-level');
     const stepsEl = this.root.querySelector('#mem-steps');
     const timeEl = this.root.querySelector('#mem-time');
     const pairsEl = this.root.querySelector('#mem-pairs');
+    const scoreEl = this.root.querySelector('#mem-score');
+    if (levelEl) levelEl.textContent = `${this.level}/${LEVELS.length}`;
     if (stepsEl) stepsEl.textContent = String(this.steps);
     if (timeEl) timeEl.textContent = `${this.elapsedSec}s`;
-    if (pairsEl) pairsEl.textContent = `${this.matchedPairs}/${EMOJIS.length}`;
+    if (pairsEl) pairsEl.textContent = `${this.matchedPairs}/${this.currentPairs}`;
+    if (scoreEl) {
+      scoreEl.textContent = String(
+        this.hasStarted ? this.totalScore + this.computeScore() : this.totalScore
+      );
+    }
   }
 
   private createBoard() {
+    const config = LEVELS[this.level - 1];
     this.boardEl.innerHTML = '';
+    // 根据当前关卡设置 grid 列数/行数与宽高比
+    this.boardEl.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+    this.boardEl.style.gridTemplateRows = `repeat(${config.rows}, 1fr)`;
+    this.boardEl.style.aspectRatio = `${config.cols} / ${config.rows}`;
+    this.boardEl.dataset.level = String(this.level);
     for (let i = 0; i < this.cards.length; i++) {
       const card = this.cards[i];
       const el = document.createElement('div');
@@ -229,20 +299,57 @@ class Memory implements GameInstance {
     el.classList.toggle('matched', card.matched);
   }
 
+  /** 通关一关：累加分数、判定成就、加载下一关或结束游戏 */
+  private onLevelClear() {
+    // 停止本关计时，避免后续 updateLiveScore 重复计入本关分数
+    if (this.timerInterval !== null) {
+      window.clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    this.hasStarted = false;
+
+    const levelScore = this.computeScore();
+    this.totalScore += levelScore;
+    this.scoreCb?.(this.totalScore);
+    this.updateInfo();
+
+    // 单关成就判定（沿用各关独立表现）
+    if (this.steps <= 20) this.unlockAch('memory_steps_20');
+    if (this.elapsedSec <= 30) this.unlockAch('memory_time_30s');
+    if (this.wrongMatches === 0) this.unlockAch('memory_perfect');
+
+    if (this.level < LEVELS.length) {
+      this.showLevelClearBanner();
+      this.levelTimer = window.setTimeout(() => {
+        this.level += 1;
+        this.loadLevel(this.level);
+      }, 1500);
+    } else {
+      this.endGame();
+    }
+  }
+
+  /** 关卡通关短暂横幅 */
+  private showLevelClearBanner() {
+    if (this.bannerEl) this.bannerEl.remove();
+    const banner = document.createElement('div');
+    banner.className = 'mem-banner';
+    banner.innerHTML = `<span>🎉 第 ${this.level} 关通关！</span>`;
+    this.boardEl.appendChild(banner);
+    this.bannerEl = banner;
+  }
+
   private endGame() {
     this.isOver = true;
     this.clearTimers();
-    const finalScore = this.computeScore();
+    const finalScore = this.totalScore;
     this.scoreCb?.(finalScore);
 
     storage.recordScore(GAME_ID, finalScore);
     storage.markPlayed(GAME_ID);
 
-    // 解锁成就
+    // 通关成就（仅完成全部关卡才解锁）
     this.unlockAch('memory_clear');
-    if (this.steps <= 20) this.unlockAch('memory_steps_20');
-    if (this.elapsedSec <= 30) this.unlockAch('memory_time_30s');
-    if (this.wrongMatches === 0) this.unlockAch('memory_perfect');
 
     // 检查里程碑
     const newly = checkMilestones(storage.load());
@@ -264,9 +371,9 @@ class Memory implements GameInstance {
     const overlay = document.createElement('div');
     overlay.className = 'mem-overlay';
     overlay.innerHTML = `
-      <h3>🎉 通关！</h3>
-      <p>得分 ${score}</p>
-      <p class="mem-overlay-stats">步数 ${this.steps} · 用时 ${this.elapsedSec}s · 错误 ${this.wrongMatches}</p>
+      <h3>🏆 全部通关！</h3>
+      <p>总分 ${score}</p>
+      <p class="mem-overlay-stats">最后一关 · 步数 ${this.steps} · 用时 ${this.elapsedSec}s · 错误 ${this.wrongMatches}</p>
       <div class="mem-overlay-actions">
         <button class="btn-primary" data-action="restart">再来一局</button>
       </div>
@@ -277,10 +384,11 @@ class Memory implements GameInstance {
     overlay.querySelector('[data-action=restart]')?.addEventListener('click', () => {
       overlay.remove();
       this.overlayEl = null;
-      this.initCards();
-      this.createBoard();
-      this.updateInfo();
+      this.level = 1;
+      this.totalScore = 0;
+      this.isOver = false;
       this.scoreCb?.(0);
+      this.loadLevel(1);
     });
   }
 
@@ -293,6 +401,10 @@ class Memory implements GameInstance {
       window.clearTimeout(this.flipBackTimer);
       this.flipBackTimer = null;
     }
+    if (this.levelTimer !== null) {
+      window.clearTimeout(this.levelTimer);
+      this.levelTimer = null;
+    }
   }
 
   destroy(): void {
@@ -301,6 +413,10 @@ class Memory implements GameInstance {
     if (this.overlayEl) {
       this.overlayEl.remove();
       this.overlayEl = null;
+    }
+    if (this.bannerEl) {
+      this.bannerEl.remove();
+      this.bannerEl = null;
     }
     // 若未结束就退出，仍记录分数和游玩
     if (!this.isOver && this.hasStarted) {
@@ -322,6 +438,6 @@ class Memory implements GameInstance {
   }
 
   getInstructions(): string {
-    return '翻开两张相同图案的牌即可配对，全部配对完成通关。步数越少、用时越短、错误越少，得分越高。';
+    return '翻开两张相同图案的牌即可配对。共 5 关递增难度，每关独立计分，总分 = 各关分数之和。步数越少、用时越短、错误越少，得分越高。';
   }
 }

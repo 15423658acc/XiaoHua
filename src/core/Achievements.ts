@@ -138,7 +138,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'sokoban_clear_all',
     name: '推箱大师',
-    description: '通关推箱子全部 6 关',
+    description: '通关推箱子全部 10 关',
     game: 'sokoban',
     icon: '🏆',
   },

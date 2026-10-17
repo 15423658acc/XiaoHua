@@ -2,7 +2,7 @@
  * 俄罗斯方块 —— 实现 GameInstance 接口
  *
  * 渲染：Canvas（主棋盘 + 下一个方块预览）
- * 输入：键盘（← → 移动、↑/W 旋转、↓/S 软降、空格硬降）+ 触屏滑动
+ * 输入：键盘（← → 移动、↑/W 旋转、↓/S 软降、空格硬降）+ 屏幕按键
  * 重力：500ms/格，每消 10 行加速 50ms（最低 100ms）
  * 软降：50ms/格（按住下键）
  * 得分：1/2/3/4 行 = 100/300/500/800
@@ -33,10 +33,10 @@ class Tetris implements GameInstance {
   private nextCtx!: CanvasRenderingContext2D;
   private overlayEl: HTMLElement | null = null;
 
-  private readonly COLS = 10;
-  private readonly ROWS = 20;
-  private readonly CELL = 22; // canvas 内部分辨率：220 x 440
-  private readonly NEXT_CELL = 22; // 预览 canvas 内部分辨率：88 x 88
+  private readonly COLS = 12;
+  private readonly ROWS = 24;
+  private readonly CELL = 16; // canvas 内部分辨率：192 x 384
+  private readonly NEXT_CELL = 16; // 预览 canvas 内部分辨率：64 x 64
 
   /** 棋盘格：'' 表示空，否则为颜色字符串 */
   private grid: string[][] = [];
@@ -58,9 +58,8 @@ class Tetris implements GameInstance {
 
   private keyDownHandler = (e: KeyboardEvent) => this.handleKeyDown(e);
   private keyUpHandler = (e: KeyboardEvent) => this.handleKeyUp(e);
-  private touchStart = { x: 0, y: 0 };
-  private touchStartHandler = (e: TouchEvent) => this.handleTouchStart(e);
-  private touchEndHandler = (e: TouchEvent) => this.handleTouchEnd(e);
+  /** 屏幕按键监听器引用，用于 destroy 时清理 */
+  private controlHandlers: Array<{ btn: Element; handler: (e: Event) => void }> = [];
 
   start(container: HTMLElement): void {
     const save = storage.load();
@@ -70,11 +69,18 @@ class Tetris implements GameInstance {
     this.root.innerHTML = `
       <div class="tetris-wrap">
         <div class="tetris-instructions">
-          ← → 移动 · ↑/W 旋转 · ↓/S 软降 · 空格硬降 · 触屏可滑动
+          ← → 移动 · ↑/W 旋转 · ↓/S 软降 · 空格硬降
         </div>
         <div class="tetris-play">
           <div class="tetris-board-wrap">
             <canvas id="tetris-canvas" width="${this.COLS * this.CELL}" height="${this.ROWS * this.CELL}"></canvas>
+            <div class="tetris-controls">
+              <button class="tc-btn" data-action="left" type="button">←</button>
+              <button class="tc-btn" data-action="right" type="button">→</button>
+              <button class="tc-btn" data-action="rotate" type="button">↻</button>
+              <button class="tc-btn" data-action="down" type="button">↓</button>
+              <button class="tc-btn" data-action="drop" type="button">⬇</button>
+            </div>
           </div>
           <div class="tetris-side">
             <div>
@@ -104,6 +110,7 @@ class Tetris implements GameInstance {
     this.next = randomPiece();
     this.spawnPiece();
     this.bindInput();
+    this.bindControls();
     this.startGravity();
     this.render();
     this.scoreCb?.(this.score);
@@ -127,15 +134,43 @@ class Tetris implements GameInstance {
   private bindInput() {
     window.addEventListener('keydown', this.keyDownHandler, { passive: false });
     window.addEventListener('keyup', this.keyUpHandler);
-    this.canvas.addEventListener('touchstart', this.touchStartHandler, { passive: true });
-    this.canvas.addEventListener('touchend', this.touchEndHandler, { passive: false });
   }
 
   private unbindInput() {
     window.removeEventListener('keydown', this.keyDownHandler);
     window.removeEventListener('keyup', this.keyUpHandler);
-    this.canvas.removeEventListener('touchstart', this.touchStartHandler);
-    this.canvas.removeEventListener('touchend', this.touchEndHandler);
+  }
+
+  /** 绑定屏幕按键控制区按钮 */
+  private bindControls() {
+    const buttons = this.root.querySelectorAll('.tc-btn');
+    buttons.forEach(btn => {
+      const action = btn.getAttribute('data-action');
+      if (!action) return;
+      const handler = (e: Event) => {
+        e.preventDefault();
+        if (this.isOver) return;
+        switch (action) {
+          case 'left': this.move(-1); break;
+          case 'right': this.move(1); break;
+          case 'rotate': this.rotate(); break;
+          case 'down': this.softDropOnce(); break;
+          case 'drop': this.hardDrop(); break;
+        }
+      };
+      btn.addEventListener('touchstart', handler, { passive: false });
+      btn.addEventListener('click', handler);
+      this.controlHandlers.push({ btn, handler });
+    });
+  }
+
+  /** 解绑屏幕按键控制区按钮 */
+  private unbindControls() {
+    for (const { btn, handler } of this.controlHandlers) {
+      btn.removeEventListener('touchstart', handler);
+      btn.removeEventListener('click', handler);
+    }
+    this.controlHandlers = [];
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -173,36 +208,6 @@ class Tetris implements GameInstance {
         this.softDropActive = false;
         this.restartGravity();
       }
-    }
-  }
-
-  private handleTouchStart(e: TouchEvent) {
-    if (e.touches.length !== 1) return;
-    this.touchStart.x = e.touches[0].clientX;
-    this.touchStart.y = e.touches[0].clientY;
-  }
-
-  private handleTouchEnd(e: TouchEvent) {
-    if (this.isOver) return;
-    e.preventDefault();
-    if (e.changedTouches.length !== 1) return;
-    const dx = e.changedTouches[0].clientX - this.touchStart.x;
-    const dy = e.changedTouches[0].clientY - this.touchStart.y;
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-    // 阈值 < 24px = 点击 = 硬降
-    if (Math.max(absX, absY) < 24) {
-      this.hardDrop();
-      return;
-    }
-    if (absX > absY) {
-      this.move(dx > 0 ? 1 : -1);
-    } else if (dy > 0) {
-      // 下滑 = 软降一格
-      this.softDropOnce();
-    } else {
-      // 上滑 = 旋转
-      this.rotate();
     }
   }
 
@@ -264,7 +269,7 @@ class Tetris implements GameInstance {
     }
   }
 
-  /** 软降一格（触屏） */
+  /** 软降一格（屏幕按键） */
   private softDropOnce() {
     if (!this.current) return;
     if (this.canPlace(this.current.def, this.current.rotation, this.current.x, this.current.y + 1)) {
@@ -571,6 +576,7 @@ class Tetris implements GameInstance {
 
   destroy(): void {
     this.unbindInput();
+    this.unbindControls();
     this.stopGravity();
     if (this.overlayEl) this.overlayEl.remove();
     // 若未结束就退出，仍记录分数和游玩
