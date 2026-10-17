@@ -13,7 +13,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'global_first_open',
     name: '初次启动',
-    description: '首次打开 XiaoHua',
+    description: '首次打开小华游戏',
     game: '*',
     icon: '🌱',
   },
