@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  max-width: 480px;
+  max-width: min(92vw, 480px);
   width: 100%;
 }
 
@@ -19,6 +19,7 @@
   color: var(--text-secondary);
 }
 
+.lk-level,
 .lk-remaining,
 .lk-timer {
   background: var(--bg-card);
@@ -35,14 +36,17 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   font-family: inherit;
   font-weight: 600;
   transition: background 0.12s, transform 0.1s;
   touch-action: manipulation;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .lk-hint:hover,
@@ -58,14 +62,13 @@
 .lk-board-wrap {
   position: relative;
   width: 100%;
-  max-width: 480px;
-  aspect-ratio: 8 / 10;
+  max-width: min(92vw, 480px);
+  /* aspect-ratio 由 JS 根据当前关卡动态设置 */
 }
 
 .lk-board {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(10, 1fr);
+  /* grid-template-columns/rows 由 JS 根据当前关卡动态设置 */
   gap: 3px;
   width: 100%;
   height: 100%;
@@ -79,21 +82,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(16px, 4.5vw, 24px);
+  font-size: clamp(14px, 4.5vw, 24px);
   background: var(--bg-card);
   border-radius: 6px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   user-select: none;
   transition: background 0.12s, transform 0.12s;
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 28px;
+  min-height: 28px;
 }
 
-.lk-tile:not(.lk-tile-empty):hover {
+/* 关卡字号自适应：关卡越高牌越多，字号越小 */
+.lk-board[data-level="1"] .lk-tile {
+  font-size: clamp(24px, 7vw, 36px);
+}
+.lk-board[data-level="2"] .lk-tile {
+  font-size: clamp(18px, 5vw, 28px);
+}
+.lk-board[data-level="3"] .lk-tile {
+  font-size: clamp(16px, 4.5vw, 24px);
+}
+.lk-board[data-level="4"] .lk-tile {
+  font-size: clamp(14px, 4vw, 22px);
+}
+.lk-board[data-level="5"] .lk-tile {
+  font-size: clamp(14px, 3.5vw, 20px);
+}
+
+.lk-tile:not(.lk-tile-empty):not(.lk-tile-vanish):hover {
   background: var(--bg-card-hover);
 }
 
-.lk-tile:not(.lk-tile-empty):active {
+.lk-tile:not(.lk-tile-empty):not(.lk-tile-vanish):active {
   transform: scale(0.94);
 }
 
@@ -123,6 +144,29 @@
   }
 }
 
+/* 消除动画：先轻微放大再缩小淡出，提供清晰的消除反馈 */
+.lk-tile-vanish {
+  animation: lk-tile-vanish 0.45s ease forwards;
+  pointer-events: none;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+@keyframes lk-tile-vanish {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.15);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+
 .lk-line-overlay {
   position: absolute;
   inset: 0;
@@ -135,7 +179,7 @@
 
 .lk-line-path {
   filter: drop-shadow(0 0 4px rgba(78, 204, 163, 0.7));
-  animation: lk-line-fade 0.3s ease;
+  animation: lk-line-fade 0.5s ease;
 }
 
 @keyframes lk-line-fade {
@@ -164,13 +208,16 @@
 }
 
 .lk-overlay h3 {
-  font-size: clamp(22px, 6vw, 30px);
+  font-size: clamp(20px, 6vw, 28px);
   color: var(--success);
+  text-align: center;
+  margin: 0;
 }
 
 .lk-overlay p {
   color: var(--text-secondary);
   font-size: 14px;
+  margin: 0;
 }
 
 .lk-overlay-stats {
@@ -181,6 +228,8 @@
 .lk-overlay-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .lk-overlay-actions .btn-primary {
@@ -190,7 +239,11 @@
   padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+  min-width: 36px;
+  min-height: 36px;
+  touch-action: manipulation;
 }

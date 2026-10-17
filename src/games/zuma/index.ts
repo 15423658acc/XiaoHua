@@ -79,6 +79,8 @@ class Zuma implements GameInstance {
   private currentColor = '';
   private nextColor = '';
   private angle = -Math.PI / 2; // 默认朝上
+  private hasAimed = false; // 移动端是否已瞄准（两段式触摸状态）
+  private touchStartPos = { x: 0, y: 0 };
 
   private score = 0;
   private best = 0;
@@ -95,6 +97,7 @@ class Zuma implements GameInstance {
   private clickHandler = (e: MouseEvent) => this.handleClick(e);
   private touchMoveHandler = (e: TouchEvent) => this.handleTouchMove(e);
   private touchStartHandler = (e: TouchEvent) => this.handleTouchStart(e);
+  private touchEndHandler = (e: TouchEvent) => this.handleTouchEnd(e);
 
   private loop = () => {
     if (this.state !== 'running') {
@@ -121,7 +124,7 @@ class Zuma implements GameInstance {
           <canvas id="zuma-canvas"></canvas>
           <div class="zuma-overlay" hidden></div>
         </div>
-        <div class="zuma-instructions">移动鼠标/手指瞄准 · 点击发射 · 消除 3 个以上同色球</div>
+        <div class="zuma-instructions">桌面：鼠标移动瞄准·点击发射；移动端：触摸屏幕拖动选择方向·松开后再次触摸即发射</div>
       </div>
     `;
     this.canvas = this.root.querySelector('#zuma-canvas') as HTMLCanvasElement;
@@ -247,6 +250,7 @@ class Zuma implements GameInstance {
     this.nextColor = this.randomChainColor();
     this.state = 'running';
     this.isOver = false;
+    this.hasAimed = false; // 新关卡重置瞄准状态，要求重新瞄准后再发射
     if (this.levelEl) this.levelEl.textContent = `第 ${idx + 1} 关`;
     this.updateBallsDisplay();
     this.startLoop();
@@ -261,6 +265,7 @@ class Zuma implements GameInstance {
     this.canvas.addEventListener('click', this.clickHandler);
     this.canvas.addEventListener('touchstart', this.touchStartHandler, { passive: false });
     this.canvas.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
+    this.canvas.addEventListener('touchend', this.touchEndHandler, { passive: false });
   }
 
   private unbindInput() {
@@ -268,6 +273,7 @@ class Zuma implements GameInstance {
     this.canvas.removeEventListener('click', this.clickHandler);
     this.canvas.removeEventListener('touchstart', this.touchStartHandler);
     this.canvas.removeEventListener('touchmove', this.touchMoveHandler);
+    this.canvas.removeEventListener('touchend', this.touchEndHandler);
   }
 
   private clientToCanvas(clientX: number, clientY: number): { x: number; y: number } {
@@ -316,8 +322,21 @@ class Zuma implements GameInstance {
     e.preventDefault();
     if (e.touches.length !== 1) return;
     const p = this.clientToCanvas(e.touches[0].clientX, e.touches[0].clientY);
-    this.updateAngle(p.x, p.y);
-    this.shoot();
+    if (this.hasAimed) {
+      // 已瞄准过，这次 touchstart 触发发射
+      this.updateAngle(p.x, p.y);
+      this.shoot();
+      this.hasAimed = false; // 重置，下次需重新瞄准
+    } else {
+      // 第一次触摸，仅记录起点开始瞄准（touchmove 会持续更新）
+      this.touchStartPos = p;
+      this.updateAngle(p.x, p.y);
+      this.hasAimed = true;
+    }
+  }
+
+  private handleTouchEnd(_e: TouchEvent) {
+    // 松手不发射，hasAimed 保持，等下次 touchstart 触发发射
   }
 
   private shoot() {
@@ -676,8 +695,69 @@ class Zuma implements GameInstance {
     }
   }
 
+  /** 沿当前 angle 绘制发射轨迹预览虚线，命中球或边界则停止 */
+  private drawAimingTrajectory() {
+    const ctx = this.ctx;
+    const dx = Math.cos(this.angle);
+    const dy = Math.sin(this.angle);
+    const step = 4;
+    const maxSteps = 200;
+    const hitR = 2 * this.BALL_R; // 与球碰撞距离
+    let x = this.LAUNCHER_X;
+    let y = this.LAUNCHER_Y;
+    let endX = x;
+    let endY = y;
+    let hit = false;
+    for (let i = 0; i < maxSteps; i++) {
+      x += dx * step;
+      y += dy * step;
+      // 边界检测（含顶部）
+      if (x < 0 || x > this.W || y < 0 || y > this.H) {
+        endX = Math.max(0, Math.min(this.W, x));
+        endY = Math.max(0, Math.min(this.H, y));
+        break;
+      }
+      // 球碰撞检测
+      let collided = false;
+      for (const b of this.balls) {
+        const p = this.getPointAt(b.t);
+        if (Math.hypot(x - p.x, y - p.y) < hitR) {
+          collided = true;
+          break;
+        }
+      }
+      if (collided) {
+        endX = x;
+        endY = y;
+        hit = true;
+        break;
+      }
+      endX = x;
+      endY = y;
+    }
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(this.LAUNCHER_X, this.LAUNCHER_Y);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    // 命中球时画终点小圆点标记
+    if (hit) {
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.beginPath();
+      ctx.arc(endX, endY, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   private drawLauncher() {
     const ctx = this.ctx;
+    // 瞄准轨迹预览（先画，使发射器覆盖虚线起点）
+    this.drawAimingTrajectory();
     // 底座
     ctx.fillStyle = '#2a2a4a';
     ctx.beginPath();
@@ -717,6 +797,11 @@ class Zuma implements GameInstance {
     ctx.fillStyle = this.nextColor;
     ctx.beginPath();
     ctx.arc(this.LAUNCHER_X - 30, this.LAUNCHER_Y, this.BALL_R - 4, 0, Math.PI * 2);
+    ctx.fill();
+    // 移动端瞄准状态指示点：已瞄准绿点，待瞄准灰点
+    ctx.fillStyle = this.hasAimed ? '#4ecca3' : 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.arc(this.LAUNCHER_X + 30, this.LAUNCHER_Y, 4, 0, Math.PI * 2);
     ctx.fill();
   }
 

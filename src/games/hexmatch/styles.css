@@ -34,7 +34,7 @@
   width: fit-content;
   max-width: 100%;
   padding: 8px;
-  background: #2a2a40;
+  background: #1f1f36;
   border-radius: 12px;
   touch-action: none;
   user-select: none;
@@ -43,7 +43,7 @@
 .hex-row {
   display: flex;
   gap: var(--gap);
-  width: calc(7 * var(--hex-size) + 6 * var(--gap));
+  width: calc(6 * var(--hex-size) + 5 * var(--gap));
   flex-shrink: 0;
 }
 
@@ -70,7 +70,7 @@
   position: absolute;
   inset: 0;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0.1) 100%);
   pointer-events: none;
 }
 

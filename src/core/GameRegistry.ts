@@ -95,7 +95,7 @@ export const GAMES: GameRegistration[] = [
     name: '数独',
     icon: '🧩',
     category: 'logic',
-    description: '填入 1-9 数字，挑战数独逻辑',
+    description: '填入 1-9 数字，同行同列同小九宫不能有一样的数字',
     factory: SudokuFactory,
   },
   {

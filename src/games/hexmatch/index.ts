@@ -13,12 +13,12 @@ import { checkMilestones } from '../../core/Achievements';
 import './styles.css';
 
 const GAME_ID = 'hexmatch';
-const ROWS = 7;
-const COLS = 7;
+const ROWS = 6;
+const COLS = 6;
 const TIME_LIMIT = 60;
 
-/** 6 种颜色（与 spec 一致） */
-const COLORS = ['#e94560', '#4ecca3', '#ffd369', '#5e72e4', '#a855f7', '#fb923c'];
+/** 5 种柔和低饱和色（防眼花） */
+const COLORS = ['#e0708c', '#6ec9a3', '#e0c070', '#7c8cd1', '#a884c4'];
 
 /** 三条轴：水平 E、右下 SE、左下 SW（forward 方向） */
 type Axis = 'E' | 'SE' | 'SW';
@@ -38,7 +38,7 @@ class Hexmatch implements GameInstance {
   private timerEl!: HTMLElement;
   private overlayEl: HTMLElement | null = null;
 
-  /** grid[r][c] = 颜色索引 0..5；-1 表示空 */
+  /** grid[r][c] = 颜色索引 0..4；-1 表示空 */
   private grid: number[][] = [];
   private score = 0;
   private timeLeft = TIME_LIMIT;
@@ -96,7 +96,7 @@ class Hexmatch implements GameInstance {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         // 随机尝试颜色，挑不会立即形成 3 连的
-        const order = this.shuffle([0, 1, 2, 3, 4, 5]);
+        const order = this.shuffle([0, 1, 2, 3, 4]);
         for (const color of order) {
           this.grid[r][c] = color;
           if (!this.wouldFormMatchAt(r, c)) break;
