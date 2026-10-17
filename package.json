@@ -1,0 +1,17 @@
+{
+  "name": "xiaohua-games",
+  "version": "0.1.0",
+  "description": "单机小游戏合集 - 纯前端，零后端，托管 GitHub Pages",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["games", "2048", "single-player", "pwa", "offline"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
+  }
+}

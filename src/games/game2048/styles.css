@@ -1,0 +1,101 @@
+/* 2048 游戏样式 */
+.g2048-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.g2048-instructions {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.g2048-board {
+  position: relative;
+  background: #2a2a40;
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  touch-action: none; /* 阻止页面滚动 */
+}
+
+.g2048-cell {
+  background: #3a3a55;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(20px, 6vw, 36px);
+  font-weight: 700;
+  color: #fff;
+  transition: transform 0.1s;
+  user-select: none;
+}
+
+/* 数字颜色：从浅到深 */
+.g2048-cell[data-val="2"]    { background: #eee4da; color: #776e65; }
+.g2048-cell[data-val="4"]    { background: #ede0c8; color: #776e65; }
+.g2048-cell[data-val="8"]    { background: #f2b179; color: #fff; }
+.g2048-cell[data-val="16"]   { background: #f59563; color: #fff; }
+.g2048-cell[data-val="32"]   { background: #f67c5f; color: #fff; }
+.g2048-cell[data-val="64"]   { background: #f65e3b; color: #fff; }
+.g2048-cell[data-val="128"]  { background: #edcf72; color: #fff; font-size: clamp(18px, 5.5vw, 32px); }
+.g2048-cell[data-val="256"]  { background: #edcc61; color: #fff; font-size: clamp(18px, 5.5vw, 32px); }
+.g2048-cell[data-val="512"]  { background: #edc850; color: #fff; font-size: clamp(18px, 5.5vw, 32px); }
+.g2048-cell[data-val="1024"] { background: #edc53f; color: #fff; font-size: clamp(16px, 5vw, 28px); }
+.g2048-cell[data-val="2048"] { background: #edc22e; color: #fff; font-size: clamp(16px, 5vw, 28px); box-shadow: 0 0 20px rgba(237, 194, 46, 0.6); }
+.g2048-cell[data-val="4096"], .g2048-cell[data-val="8192"] {
+  background: #3c3a32; color: #fff; font-size: clamp(14px, 4.5vw, 26px);
+}
+
+.g2048-cell.new-tile {
+  animation: g2048-pop 0.18s ease;
+}
+.g2048-cell.merged {
+  animation: g2048-merge 0.18s ease;
+}
+@keyframes g2048-pop {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes g2048-merge {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.g2048-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+}
+.g2048-overlay h3 {
+  font-size: 28px;
+  color: var(--warning);
+}
+.g2048-overlay p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.g2048-overlay-actions {
+  display: flex;
+  gap: 8px;
+}
