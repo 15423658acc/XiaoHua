@@ -1,0 +1,199 @@
+/* 井字棋游戏样式 */
+.ttt-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+/* 难度切换 */
+.ttt-difficulty {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.ttt-diff-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: background 0.2s, color 0.2s;
+}
+
+.ttt-diff-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.ttt-status {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-height: 24px;
+  text-align: center;
+}
+
+/* 棋盘 */
+.ttt-board-wrap {
+  position: relative;
+  width: min(92vw, 380px);
+  aspect-ratio: 1 / 1;
+}
+
+.ttt-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  touch-action: manipulation;
+}
+
+.ttt-cell {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(34px, 11vw, 60px);
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: background 0.15s, transform 0.1s;
+  user-select: none;
+  line-height: 1;
+}
+
+.ttt-cell:active { transform: scale(0.95); }
+.ttt-cell:hover:not(.ttt-x):not(.ttt-o) { background: var(--bg-card-hover); }
+
+.ttt-cell.ttt-x { color: var(--accent); }
+.ttt-cell.ttt-o { color: var(--success); }
+.ttt-cell.ttt-win {
+  background: var(--bg-card-hover);
+  animation: ttt-pulse 0.6s ease infinite alternate;
+}
+
+@keyframes ttt-pulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
+/* 胜利连线 */
+.ttt-win-line {
+  position: absolute;
+  border-radius: 3px;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 10px currentColor;
+  animation: ttt-line-in 0.3s ease;
+}
+
+@keyframes ttt-line-in {
+  from { opacity: 0; transform-origin: center; }
+  to   { opacity: 1; }
+}
+
+/* 水平线 (行 0/1/2) */
+.ttt-win-line-0, .ttt-win-line-1, .ttt-win-line-2 {
+  left: 12%;
+  width: 76%;
+  height: 6px;
+  transform: translateY(-50%);
+}
+.ttt-win-line-0 { top: 16.67%; }
+.ttt-win-line-1 { top: 50%; }
+.ttt-win-line-2 { top: 83.33%; }
+
+/* 垂直线 (列 0/1/2) */
+.ttt-win-line-3, .ttt-win-line-4, .ttt-win-line-5 {
+  top: 12%;
+  height: 76%;
+  width: 6px;
+  transform: translateX(-50%);
+}
+.ttt-win-line-3 { left: 16.67%; }
+.ttt-win-line-4 { left: 50%; }
+.ttt-win-line-5 { left: 83.33%; }
+
+/* 对角线 (主对角 / 副对角) */
+.ttt-win-line-6, .ttt-win-line-7 {
+  top: 50%;
+  left: 50%;
+  width: 92%;
+  height: 6px;
+  transform-origin: center center;
+}
+.ttt-win-line-6 { transform: translate(-50%, -50%) rotate(45deg); }
+.ttt-win-line-7 { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.ttt-win-x { background: var(--accent); color: var(--accent); }
+.ttt-win-o { background: var(--success); color: var(--success); }
+
+/* 统计 */
+.ttt-stats {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ttt-stats b {
+  color: var(--warning);
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.ttt-instructions {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* 覆盖层 */
+.ttt-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+  animation: ttt-fade 0.2s ease;
+}
+
+@keyframes ttt-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ttt-overlay h3 {
+  font-size: 24px;
+  color: var(--warning);
+}
+
+.ttt-overlay-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .ttt-stats { gap: 12px; font-size: 12px; }
+  .ttt-diff-btn { padding: 6px 12px; font-size: 12px; }
+}

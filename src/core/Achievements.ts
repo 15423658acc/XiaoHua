@@ -368,6 +368,186 @@ export const ACHIEVEMENTS: Achievement[] = [
     game: 'zuma',
     icon: '🔥',
   },
+
+  // Flappy Bird 成就
+  {
+    id: 'flappy_score_5',
+    name: '飞鸟起步',
+    description: '在 Flappy Bird 单局得分达到 5',
+    game: 'flappybird',
+    icon: '🐤',
+  },
+  {
+    id: 'flappy_score_15',
+    name: '飞鸟老手',
+    description: '在 Flappy Bird 单局得分达到 15',
+    game: 'flappybird',
+    icon: '✈️',
+  },
+  {
+    id: 'flappy_score_30',
+    name: '飞鸟大师',
+    description: '在 Flappy Bird 单局得分达到 30',
+    game: 'flappybird',
+    icon: '🏆',
+  },
+  {
+    id: 'flappy_combo_5',
+    name: '飞鸟连击',
+    description: '在 Flappy Bird 中连续 5 局每局都得分 ≥ 5',
+    game: 'flappybird',
+    icon: '🔥',
+  },
+
+  // 跳跃塔成就
+  {
+    id: 'doodle_height_100',
+    name: '跳跃入门',
+    description: '在跳跃塔中高度分达到 100',
+    game: 'doodlejump',
+    icon: '🪜',
+  },
+  {
+    id: 'doodle_height_500',
+    name: '跳跃高手',
+    description: '在跳跃塔中高度分达到 500',
+    game: 'doodlejump',
+    icon: '⛰️',
+  },
+  {
+    id: 'doodle_height_1000',
+    name: '跳跃大师',
+    description: '在跳跃塔中高度分达到 1000',
+    game: 'doodlejump',
+    icon: '🏔️',
+  },
+  {
+    id: 'doodle_use_moving',
+    name: '移动跳手',
+    description: '在跳跃塔中踩到 5 次横向移动平台',
+    game: 'doodlejump',
+    icon: '🎯',
+  },
+
+  // 井字棋成就
+  {
+    id: 'tictactoe_win_medium',
+    name: '智胜中等',
+    description: '在井字棋中等难度下击败 AI',
+    game: 'tictactoe',
+    icon: '🎯',
+  },
+  {
+    id: 'tictactoe_draw_hard',
+    name: '困境求和',
+    description: '在井字棋困难难度下平局 3 次',
+    game: 'tictactoe',
+    icon: '🤝',
+  },
+  {
+    id: 'tictactoe_streak_3',
+    name: '三局不败',
+    description: '在井字棋中连续 3 局不输',
+    game: 'tictactoe',
+    icon: '⚡',
+  },
+  {
+    id: 'tictactoe_play_10',
+    name: '井字常客',
+    description: '在井字棋中累计游玩 10 局',
+    game: 'tictactoe',
+    icon: '🎮',
+  },
+
+  // 五子棋残局成就
+  {
+    id: 'gomoku_clear_1',
+    name: '残局入门',
+    description: '通关五子棋残局第 1 局',
+    game: 'gomoku',
+    icon: '🎯',
+  },
+  {
+    id: 'gomoku_clear_3',
+    name: '中盘巧胜',
+    description: '通关五子棋残局第 3 局',
+    game: 'gomoku',
+    icon: '⚡',
+  },
+  {
+    id: 'gomoku_clear_all',
+    name: '残局大师',
+    description: '通关五子棋残局全部 5 局',
+    game: 'gomoku',
+    icon: '👑',
+  },
+  {
+    id: 'gomoku_no_hint',
+    name: '无师自通',
+    description: '在五子棋残局中未使用任何提示通关全部 5 局',
+    game: 'gomoku',
+    icon: '💎',
+  },
+
+  // 单词搜索成就
+  {
+    id: 'wordsearch_clear_1',
+    name: '寻词起步',
+    description: '通关单词搜索第 1 关',
+    game: 'wordsearch',
+    icon: '🔤',
+  },
+  {
+    id: 'wordsearch_clear_3',
+    name: '寻词熟手',
+    description: '通关单词搜索第 3 关',
+    game: 'wordsearch',
+    icon: '📖',
+  },
+  {
+    id: 'wordsearch_clear_all',
+    name: '寻词大师',
+    description: '通关单词搜索全部 5 关',
+    game: 'wordsearch',
+    icon: '🏆',
+  },
+  {
+    id: 'wordsearch_no_wrong',
+    name: '一击即中',
+    description: '通关单词搜索全部 5 关未出现错误选词',
+    game: 'wordsearch',
+    icon: '💎',
+  },
+
+  // 猜数字成就
+  {
+    id: 'bullscows_win',
+    name: '破解密码',
+    description: '在猜数字中胜利 1 次',
+    game: 'bullscows',
+    icon: '🔓',
+  },
+  {
+    id: 'bullscows_win_5',
+    name: '灵犀一指',
+    description: '在猜数字中 5 次以内猜中',
+    game: 'bullscows',
+    icon: '⚡',
+  },
+  {
+    id: 'bullscows_win_3',
+    name: '读心大师',
+    description: '在猜数字中 3 次以内猜中',
+    game: 'bullscows',
+    icon: '🔮',
+  },
+  {
+    id: 'bullscows_no_hint',
+    name: '无提示破译',
+    description: '在猜数字中未使用提示胜利 3 次',
+    game: 'bullscows',
+    icon: '💎',
+  },
 ];
 
 /** 里程碑：基于 SaveData 计算的全局累积型目标 */

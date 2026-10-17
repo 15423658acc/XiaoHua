@@ -18,6 +18,12 @@ import { HexmatchFactory } from '../games/hexmatch';
 import { SudokuFactory } from '../games/sudoku';
 import { LiankanFactory } from '../games/liankan';
 import { ZumaFactory } from '../games/zuma';
+import { FlappybirdFactory } from '../games/flappybird';
+import { DoodlejumpFactory } from '../games/doodlejump';
+import { TictactoeFactory } from '../games/tictactoe';
+import { GomokuFactory } from '../games/gomoku';
+import { WordsearchFactory } from '../games/wordsearch';
+import { BullscowsFactory } from '../games/bullscows';
 
 export const GAMES: GameRegistration[] = [
   {
@@ -107,6 +113,54 @@ export const GAMES: GameRegistration[] = [
     category: 'action',
     description: '发射彩球消除同色链，阻止球链进洞',
     factory: ZumaFactory,
+  },
+  {
+    id: 'flappybird',
+    name: 'Flappy Bird',
+    icon: '🐤',
+    category: 'action',
+    description: '点击让小鸟跳跃穿越管道间隙，挑战极限',
+    factory: FlappybirdFactory,
+  },
+  {
+    id: 'doodlejump',
+    name: '跳跃塔',
+    icon: '🦘',
+    category: 'action',
+    description: '自动跳跃踩平台上升，掉落即失败',
+    factory: DoodlejumpFactory,
+  },
+  {
+    id: 'tictactoe',
+    name: '井字棋',
+    icon: '❌',
+    category: 'logic',
+    description: '三连成线胜出，AI 用 Minimax 算法',
+    factory: TictactoeFactory,
+  },
+  {
+    id: 'gomoku',
+    name: '五子棋残局',
+    icon: '⚫',
+    category: 'logic',
+    description: '预设残局中找到致胜走法，挑战 5 局',
+    factory: GomokuFactory,
+  },
+  {
+    id: 'wordsearch',
+    name: '单词搜索',
+    icon: '🔤',
+    category: 'puzzle',
+    description: '在字母网格中找出隐藏单词',
+    factory: WordsearchFactory,
+  },
+  {
+    id: 'bullscows',
+    name: '猜数字',
+    icon: '🔢',
+    category: 'logic',
+    description: '根据 A/B 反馈推理出 4 位密码',
+    factory: BullscowsFactory,
   },
 ];
 

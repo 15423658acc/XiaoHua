@@ -1,0 +1,272 @@
+/* 猜数字（Bulls and Cows）游戏样式 */
+.bc-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.bc-instructions {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* 答案显示区：4 个大方格 */
+.bc-answer-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.bc-answer-cell {
+  width: min(80px, 18vw);
+  height: min(80px, 18vw);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(28px, 8vw, 44px);
+  font-weight: 700;
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  user-select: none;
+}
+
+.bc-answer-cell.bc-revealed {
+  background: var(--bg-card-hover);
+  color: var(--warning);
+  border-color: var(--warning);
+  animation: bc-reveal 0.3s ease;
+}
+
+@keyframes bc-reveal {
+  0%   { transform: scale(0.85); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* 输入区 */
+.bc-input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.bc-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.bc-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.bc-input::placeholder {
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  font-weight: 400;
+}
+
+.bc-input:disabled {
+  opacity: 0.55;
+}
+
+.bc-submit-btn {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.bc-submit-btn:active { transform: scale(0.96); }
+
+/* 操作按钮行 */
+.bc-action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.bc-clear-btn, .bc-hint-btn {
+  padding: 8px 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.1s, background 0.2s;
+}
+
+.bc-clear-btn:hover, .bc-hint-btn:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+}
+
+.bc-clear-btn:active, .bc-hint-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.bc-hint-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 信息行 */
+.bc-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  min-height: 20px;
+  line-height: 1.5;
+}
+
+.bc-info.bc-error {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.bc-remaining {
+  color: var(--warning);
+  font-weight: 700;
+  margin: 0 2px;
+}
+
+/* 历史记录表 */
+.bc-history-wrap {
+  width: 100%;
+  max-width: 320px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+
+.bc-history {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.bc-history th {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+}
+
+.bc-history td {
+  text-align: center;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.bc-history-row:last-child td {
+  border-bottom: none;
+}
+
+.bc-guess-cell {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+.bc-a-cell {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.bc-b-cell {
+  color: var(--warning);
+  font-weight: 700;
+}
+
+/* 覆盖层 */
+.bc-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 5;
+  animation: bc-fade 0.2s ease;
+  flex-wrap: wrap;
+}
+
+@keyframes bc-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.bc-overlay h3 {
+  font-size: 26px;
+  color: var(--warning);
+  text-align: center;
+}
+
+.bc-overlay p {
+  color: var(--text-primary);
+  font-size: 15px;
+  text-align: center;
+}
+
+.bc-overlay-sub {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+}
+
+.bc-overlay-answer {
+  color: var(--warning);
+  font-size: 22px;
+  font-family: "Courier New", monospace;
+  letter-spacing: 4px;
+  margin-left: 4px;
+}
+
+.bc-overlay-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .bc-input-row { max-width: 100%; }
+  .bc-history-wrap { max-width: 100%; }
+  .bc-submit-btn { padding: 10px 16px; font-size: 13px; }
+  .bc-answer-cell {
+    width: min(72px, 20vw);
+    height: min(72px, 20vw);
+  }
+}
